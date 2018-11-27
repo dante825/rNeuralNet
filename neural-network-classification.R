@@ -74,6 +74,10 @@ rm(features, testLabel, trainLabel)
 
 ############### Neural Network ######################
 library(nnet)
+library(caret)
+
+# Plot the neural network
+# Find the precision and recall
 
 # Construct the neural network model with the features from PCA
 nn <- nnet(activity ~ ., data = trainData, size=4, decay=1.0e-5, maxit=50)
@@ -124,6 +128,7 @@ test2 <- t[, 1:50]
 
 ############## Neural Network after PCA #################
 library(nnet)
+library(caret)
 
 # Construct the neural network model with the features from PCA
 nn <- nnet(activity ~ ., data = train2, size=4, decay=1.0e-5, maxit=50)
