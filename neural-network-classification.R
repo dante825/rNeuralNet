@@ -12,10 +12,10 @@ features <- read.delim('./features.txt', header = F, sep = '')
 dim(features)
 head(features)
 # Select the features names from the loaded df
-features <- features %>% select(V2)
+features <- features[,2]
 
 # Load the training dataset
-trainData <- read.delim('./train/X_train.txt', header = F, sep = '', dec = '.', col.names = features[,1])
+trainData <- read.delim('./train/X_train.txt', header = F, sep = '', dec = '.', col.names = features)
 dim(trainData)
 head(trainData)
 
@@ -35,7 +35,7 @@ trainData$activity <- trainLabel[,1]
 # 6-laying
 
 # Load the test data
-testData <- read.delim('./test/X_test.txt', header = F, sep = '', dec = '.', col.names = features[,1])
+testData <- read.delim('./test/X_test.txt', header = F, sep = '', dec = '.', col.names = features)
 dim(testData)
 head(testData)
 
@@ -76,14 +76,17 @@ rm(features, testLabel, trainLabel)
 library(nnet)
 library(caret)
 
-# Plot the neural network
-# Find the precision and recall
+# The number of features is too much, select a subset of the features from the dataset
+subtrain <- trainData[,1:200]
+subtrain$activity <- trainData$activity
+
+subtest <- testData[,1:200]
 
 # Construct the neural network model with the features from PCA
-nn <- nnet(activity ~ ., data = trainData, size=4, decay=1.0e-5, maxit=50)
+nn <- nnet(activity ~ ., data = subtrain, size=4, decay=1.0e-5, maxit=50)
 
 # Apply the neural network model on the testdata
-prediction <- predict(nn, testData[-activity], type = 'class')
+prediction <- predict(nn, subtest, type = 'class')
 
 # Check the predicted output
 table(prediction)
@@ -117,7 +120,7 @@ plot(propVar, xlab = 'Principal Component', ylab = 'Proportion of variance expla
 plot(cumsum(propVar), xlab = 'Principal component', ylab = 'Cumulative proportion of variance explained',
      type = 'b', main = 'Cumulative Proportion of Variance explained by Principal Component')
 
-# From the scree plot, 100 features should be enough
+# From the scree plot, 50 features can explain 90% of the variance
 
 # Create a new dataset from PCA result
 tmpTrain <- data.frame(activity = trainData$activity, pca$x)
@@ -131,7 +134,7 @@ library(nnet)
 library(caret)
 
 # Construct the neural network model with the features from PCA
-nn <- nnet(activity ~ ., data = train2, size=4, decay=1.0e-5, maxit=50)
+nn <- nnet(activity ~ ., data = train2, size=10, decay=1.0e-5, maxit=50)
 
 # Apply the neural network model on the testdata
 prediction <- predict(nn, test2, type = 'class')
@@ -147,3 +150,34 @@ table(actual)
 results <- data.frame(actual=actual, prediction=prediction)
 t <- table(results)
 confusionMatrix(t)
+
+############# Deep learning ####################
+library(h2o)
+
+# Train an artificial neural network with h2o
+h2o.init(nthreads = -1, max_mem_size = '2G')
+# Create a clean slate just in case the cluster is already running
+h2o.removeAll()
+nnModel <-  h2o.deeplearning(y = 'activity',
+                         x = setdiff(names(train2), 'activity'),
+                         training_frame = as.h2o(train2),
+                         activation = 'Rectifier',
+                         hidden = c(15,15),
+                         distribution = 'multinomial',
+                         epochs = 150,
+                         train_samples_per_iteration = -2,
+                         variable_importances = T)
+summary(nnModel)
+plot(nnModel)
+
+pred <- h2o.predict(nnModel, newdata = as.h2o(test2))
+pred <- as.vector(pred$predict)
+table(pred)
+actual <- testData$activity
+table(actual)
+
+results <- data.frame(actual=actual, prediction=pred)
+t <- table(results)
+confusionMatrix(t)
+
+h2o.shutdown(prompt = FALSE)
