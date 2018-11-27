@@ -153,6 +153,7 @@ confusionMatrix(t)
 
 ############# Deep learning ####################
 library(h2o)
+library(caret)
 
 # Train an artificial neural network with h2o
 h2o.init(nthreads = -1, max_mem_size = '2G')
@@ -167,17 +168,24 @@ nnModel <-  h2o.deeplearning(y = 'activity',
                          epochs = 150,
                          train_samples_per_iteration = -2,
                          variable_importances = T)
+
+# Show some statistics of the model
 summary(nnModel)
 plot(nnModel)
 
+# Use the model to predict the activity on the test data
 pred <- h2o.predict(nnModel, newdata = as.h2o(test2))
+
+# Extract the predicted label from the prediction
 pred <- as.vector(pred$predict)
 table(pred)
 actual <- testData$activity
 table(actual)
 
+# Construct the confusion matrix
 results <- data.frame(actual=actual, prediction=pred)
 t <- table(results)
 confusionMatrix(t)
 
+# Shut down h2o after completing
 h2o.shutdown(prompt = FALSE)
