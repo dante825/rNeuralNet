@@ -80,12 +80,13 @@ summary(testData)
 # testData$activity[testData$activity==6] <- "laying"
 
 # Change the labels to factor
-trainData$activity <- factor(trainData$activity)
-testData$activity <- factor(testData$activity)
+# trainData$activity <- factor(trainData$activity)
+# testData$activity <- factor(testData$activity)
+# 
+# levels(trainData$activity)
+# levels(testData$activity)
 
-levels(trainData$activity)
-levels(testData$activity)
-
+# Neuralnet package does not work with factor so the response variable is not change to factor
 ########### Classification #############
 library(neuralnet)
 library(caret)
@@ -101,9 +102,6 @@ testNolabel <- testData %>% select(-activity)
 nn.results <- compute(nn, testNolabel)
 
 # Confusion Matrix
-# result <- data.frame(actual = testData$activity, prediction = round(nn.results$net.result))
-# t <- table(result)
-# confusionMatrix(t)
 prediction <- round(nn.results$net.result)
 table(prediction)
 actual <- testData$activity
@@ -142,7 +140,7 @@ t <- as.data.frame(predict(pca, newdata = pcaTest))
 train2 <- tmpTrain[,1:51]
 test2 <- t[, 1:50]
 
-# Build the neural network
+# Build the neural network With the training data after PCA
 library(neuralnet)
 library(caret)
 n <- names(train2)
@@ -154,10 +152,6 @@ plot(nn, rep = 'best')
 # Test the model
 nn.results2 <- compute(nn, test2)
 
-# results <- data.frame(actual=testData$activity, prediction = round(nn.results2$net.result))
-# t <- table(results)
-# confusionMatrix(t)
-
 prediction <- round(nn.results2$net.result)
 table(prediction)
 actual <- testData$activity
@@ -165,15 +159,4 @@ table(actual)
 
 u <- union(prediction, actual)
 t <- table(factor(prediction, u), factor(actual, u))
-confusionMatrix(t)
-
-########## Testing nnet ########
-library(nnet)
-nn <- nnet(activity ~ ., data = train2, size=4, decay=1.0e-5, maxit=50)
-prediction <- predict(nn, test2, type = 'class')
-table(prediction)
-actual <- testData$activity
-table(actual)
-results <- data.frame(actual=actual, prediction=prediction)
-t <- table(results)
 confusionMatrix(t)
