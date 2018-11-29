@@ -73,32 +73,32 @@ levels(testData$activity)
 rm(features, testLabel, trainLabel)
 
 ############### Neural Network ######################
-library(nnet)
-library(caret)
-
-# The number of features is too much, select a subset of the features from the dataset
-subtrain <- trainData[,1:200]
-subtrain$activity <- trainData$activity
-
-subtest <- testData[,1:200]
-
-# Construct the neural network model with the features from PCA
-nn <- nnet(activity ~ ., data = subtrain, size=4, decay=1.0e-5, maxit=50)
-
-# Apply the neural network model on the testdata
-prediction <- predict(nn, subtest, type = 'class')
-
-# Check the predicted output
-table(prediction)
-
-# Compare the actual output with the predicted
-actual <- testData$activity
-table(actual)
-
-# Confusion matrix for better comparison
-results <- data.frame(actual=actual, prediction=prediction)
-t <- table(results)
-confusionMatrix(t)
+# library(nnet)
+# library(caret)
+# 
+# # The number of features is too much, select a subset of the features from the dataset
+# subtrain <- trainData[,1:200]
+# subtrain$activity <- trainData$activity
+# 
+# subtest <- testData[,1:200]
+# 
+# # Construct the neural network model with the features from PCA
+# nn <- nnet(activity ~ ., data = subtrain, size=4, decay=1.0e-5, maxit=50)
+# 
+# # Apply the neural network model on the testdata
+# prediction <- predict(nn, subtest, type = 'class')
+# 
+# # Check the predicted output
+# table(prediction)
+# 
+# # Compare the actual output with the predicted
+# actual <- testData$activity
+# table(actual)
+# 
+# # Confusion matrix for better comparison
+# results <- data.frame(actual=actual, prediction=prediction)
+# t <- table(results)
+# confusionMatrix(t)
 
 ############# Principal Component Analysis #############
 pcaTrain <- trainData %>% select(-activity)
