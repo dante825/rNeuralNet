@@ -165,7 +165,7 @@ nnModel <-  h2o.deeplearning(y = 'activity',
                          activation = 'Rectifier',
                          hidden = c(100,100),
                          distribution = 'multinomial',
-                         epochs = 150,
+                         epochs = 100,
                          train_samples_per_iteration = -2,
                          variable_importances = T)
 
